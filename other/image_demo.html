@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>生与死，轮回不止，我们生，他们死</title>
+    </head>
+    <body>
+        <!--<h1>爱coding, 爱生活</h1>-->
+
+        <input type="file" id="fileElem" multiple accept="image/*"  onchange="handleFiles(this.files)">
+        <div id="fileList"></div>
+        <!--<div id="fileList" style="width:200px;height:200px;"></div>-->
+
+        <br>
+        <div id="dropbox" style="height: 300px; width: 300px; background-color: #00a0e9"></div>
+        <button onclick="submit()">上传</button>
+        <script>
+            window.URL = window.URL || window.webkitURL;
+            let fileElem = document.getElementById("fileElem"),
+                fileList = document.getElementById("fileList");
+
+            function handleFiles (files) {
+                let img = new Image();
+
+                if (window.URL) {
+                    //File API
+
+                    // 检查file的大小
+                    let file = files[0];
+                    if (file.size > 10240) {
+                        alert('图片太大了')
+                    }
+
+                    img.src = window.URL.createObjectURL(files[0]); //创建一个object URL，并不是你的本地路径
+                    img.width = 200;
+                    img.alt = file.name;
+                    img.onload = function(e) {
+                        window.URL.revokeObjectURL(this.src); //图片加载后，释放object URL
+                    };
+                    fileList.appendChild(img);
+                }
+            }
+
+            // 通过拖放操作选择文件
+            function dropbox() {
+                var dropbox;
+
+                dropbox = document.getElementById('dropbox');
+                dropbox.addEventListener('dragenter', dragenter, false);
+                dropbox.addEventListener('dragover', dragover, false);
+                dropbox.addEventListener('drop', drop, false);
+            }
+            
+            function dragenter(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            
+            function dragover(e) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+            
+            function drop(e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                var dt = e.dataTransfer;
+                var files = dt.files;
+
+                handleDropFiles(files);
+            }
+
+            function handleDropFiles(files) {
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    var imageType = /^image\//;
+
+                    if ( !imageType.test(file.type) ) {
+                        continue;
+                    }
+
+                    var img = document.createElement("img");
+                    img.classList.add("obj");
+                    img.file = file;
+                    // 假设 "preview" 是将要展示图片的 div
+                    fileList.appendChild(img);
+
+                    var reader = new FileReader();
+                    reader.onload = (function(aImg) {
+                        return function(e) {
+                            aImg.src = e.target.result;
+                        };
+                    })(img);
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            function sendFiles() {
+                var images = document.querySelectorAll('.obj');
+
+                for (let i = 0; i < images.length; i++) {
+                    //new FileUpload(images[i], images[i].file);
+                }
+            }
+            
+            function FileUpload(img, file) {
+                var reader = new FileReader();
+                var xhr = new XMLHttpRequest();
+                this.xhr = xhr;
+
+                // 需要改写成自己服务器
+                xhr.open("POST",
+                    "http://");
+                xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
+                reader.onload = function(evt) {
+                    xhr.sendAsBinary(evt.target.result);
+                };
+                reader.readAsBinaryString(file);
+            }
+
+            function submit() {
+                console.log('submit')
+                sendFiles();
+            }
+
+            // polyfill XMLHttpRequest sendAsBinary
+            if (!XMLHttpRequest.prototype.sendAsBinary) {
+                XMLHttpRequest.prototype.sendAsBinary = function (sData) {
+                    var nBytes = sData.length, ui8Data = new Uint8Array(nBytes);
+                    for (var nIdx = 0; nIdx < nBytes; nIdx++) {
+                        ui8Data[nIdx] = sData.charCodeAt(nIdx) & 0xff;
+                    }
+                    /* send as ArrayBufferView...: */
+                    this.send(ui8Data);
+                    /* ...or as ArrayBuffer (legacy)...: this.send(ui8Data.buffer); */
+                };
+            }
+
+            // 通过拖放操作选择文件
+            dropbox();
+
+        </script>
+    </body>
+</html>
