@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>答题活动</title>
+    <style type="text/css">
+        body,div,p,span,input,ul,li{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        input{
+            outline: none;
+        }
+        ul,li{
+            list-style: none;
+        }
+        /*--------------------*/
+        html{
+            font-size: 100px;
+            font-family: '微软雅黑';
+            height: 100%;
+        }
+        body{
+            width: 7.5rem;
+            height: 100%;
+            margin: 0 auto;
+        }
+        .wrap{
+            width: 7.5rem;
+            height: 100%;
+        }
+        .header{
+            width: 7.5rem;
+            padding: 4.68rem 0 .45rem;
+            background: url("img/02_1.png") no-repeat top center rgb(254,78,78);
+            background-size: cover;
+        }
+        .header .title{
+            width: 100%;
+            text-align: center;
+            line-height: .4rem;
+            font-size: .4rem;
+            color: #fff;
+            margin-bottom: .85rem;
+        }
+        .header .header_cont{
+            margin: 0 auto .68rem;
+            width: 6.84rem;
+            border: 1px solid rgb(93,39,53);
+            background: rgb(233,55,55);
+            padding: .34rem 0 .1rem .2rem;
+            border-radius: .1rem;
+        }
+        .enter{
+            font-size: .36rem;
+            height: .7rem;
+            line-height: .7rem;
+        }
+        .enter span{
+            color: #fff;
+            width: 1.54rem;
+            float: left;
+        }
+        .enter input,select{
+            width: 4.64rem;
+            height: .7rem;
+            padding-left: .2rem;
+            font-size: .36rem;
+            border: 1px solid #000;
+            background: rgb(255,176,189);
+            border-radius: .1rem;
+            float: left;
+        }
+        .enter select{
+            -webkit-appearance:none;
+            background: url("img/select.png") no-repeat right .22rem center rgb(255,176,189);
+        }
+        .point{
+            font-size: .28rem;
+            height: .5rem;
+            line-height: .5rem;
+            padding-left: 1.6rem;
+            color: rgb(251,224,23);
+        }
+        .button{
+            margin: 0 auto;
+            width: 4.66rem;
+            height: 1.22rem;
+            background: url("img/02_2.png");
+            background-size: cover;
+        }
+        /*-----------header-----------*/
+        .rule{
+            width: 7.5rem;
+            height: 100%;
+            background: rgb(255,239,203);
+        }
+        .rule .rule_cont{
+            width: 7rem;
+            margin: 0 auto;
+            background: rgb(255,226,158);
+            border: 1px solid rgb(255,244,214);
+            border-radius: .1rem;
+            padding: .4rem .3rem;
+        }
+        .rule_cont li{
+            font-size: .3rem;
+            line-height: .44rem;
+            color: rgb(91,37,50);
+        }
+        .rule_button{
+            width: 5.82rem;
+            height: .98rem;
+            font-size: .36rem;
+            line-height: .98rem;
+            text-align: center;
+            margin: .5rem auto 0;
+            background: url("img/02_3.png");
+            background-size: cover;
+        }
+        /*-------------rule------------*/
+        .content{
+            width: 7.5rem;
+            height: 100%;
+            padding: .56rem .33rem 0;
+            background: rgb(255,239,203);
+            overflow: hidden;
+        }
+        .content .head{
+            font-size: .34rem;
+            line-height: .4rem;
+            color: rgb(91,37,50);
+            overflow: hidden;
+        }
+        .content .head .head_left{
+            float: left;
+        }
+        .content .head .head_right{
+            float: right;
+        }
+        .content_subject{
+            margin: .32rem auto;
+            padding: .42rem .3rem;
+            background: rgb(255,226,158);
+            border: 1px solid rgb(255,244,214);
+            border-radius: .1rem;
+            border: 1px solid rgb(255,244,214);
+        }
+        .content_subject .subject{
+            font-size: .36rem;
+            line-height: .56rem;
+            padding-bottom: .2rem;
+        }
+        .content_subject label{
+            font-size: .34rem;
+            line-height: .48rem;
+            padding: .2rem 0 .2rem .08rem;
+            display: block;
+        }
+        .content_subject label input{
+            display: inline-block;
+            width: .34rem;
+            height: .34rem;
+            margin: .07rem .36rem 0 0;
+            color: #000;
+        }
+    </style>
+    <script type="text/javascript" src="js/rem.js"></script>
+    <script type="text/javascript" src='js/jquery.min.js'></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+</head>
+<body>
+<div class="wrap">
+    <div class="header">
+        <p class="title">请输入个人信息</p>
+        <div class="header_cont">
+            <p class="enter">
+                <span>学校：</span>
+                <select v-model="schoolSelected">
+                    <option v-for="school in schools" :value="school.id">{{school.name}}</option>
+                </select>
+            </p>
+            <p class="point" v-show="school">请填写学校！</p>
+            <p class="enter"><span>姓名：</span><input type="text" v-model="userInfo.name" required></p>
+            <p class="point" v-show="name">请填写姓名！</p>
+            <p class="enter"><span>手机号：</span><input type="number" v-model="userInfo.mobile"></p>
+            <p class="point" v-show="mobile">请填写手机号！</p>
+        </div>
+        <div class="button" v-on:click="startActivityRule"></div>
+    </div>
+    <div class="rule">
+        <ul class="rule_cont">
+            <li></li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+        <div class="rule_button" v-on:click.once="startQuestion">开始答题</div>
+    </div>
+    <div class="content">
+        <div class="head">
+            <div class="head_left"><span class="index" v-text="index"></span>/10</div>
+            <div class="head_right">用时：<span class="timestamp">{{time}}</span></div>
+        </div>
+        <div class="content_subject">
+            <p class="subject">{{question.title}}</p>
+            <label v-for="answer in question.content">
+                <input name="Fruit" type="radio" v-model="pickedAnswer" :value="answer.value"/>
+                <span>{{answer.title}}</span>
+            </label>
+            <div class="rule_button" v-show="next" v-on:click="nextQuestion">下一题</div>
+            <div class="rule_button" v-show="!next" v-on:click="submitAnswers">提交</div>
+        </div>
+    </div>
+    <div class="footer" style="display: none;"></div>
+</div>
+<script>
+    let app = new Vue({
+        el: '.wrap',
+        data: {
+            // 学生注册
+            userInfo: {
+                name: '',
+                school: '',
+                mobile: ''
+            },
+
+            schools: [],
+            schoolSelected: null,
+            mobile_id: null,
+            user: true,
+            rule: true,
+            content: true,
+
+            school: false,
+            name: false,
+            mobile: false,
+            subject_point: false,
+
+            // 回答问题
+            questions: [], //获取的数据
+            answers: [], // 返回的数据
+            index: 0,
+            question: { //正在显示的数据
+                id: null,
+                title: null,
+                content: []
+            },
+            pickedAnswer: null,
+            next: true,
+
+            //是否提现
+            withdrawals: null,
+
+            //当前答题次数
+            answerNumber: null,
+
+            // 计时
+            times: 0,
+            time: '0',
+            stop: false,
+            Interval: null,
+
+            //正确数
+            correctNumber: null,
+            //用时
+            answerTime: null,
+            //刮奖次数
+            scratchNumber: null,
+        },
+
+
+
+        created() {
+            this.getSchools();
+        },
+
+        methods: {
+            getSchools() {
+                const self = this;
+
+                console.log('获取学校列表');
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/apis/activity/answer/schools',
+//                    url: 'http://10.35.35.136:8000/activity/answer/schools',
+                    dataType: 'json',
+                    success:function(data){
+                        let result = data.result;
+
+                        if (data.result && data.result.ok) {
+                            let schools = data.result.list;
+                            self.schools = schools;
+                        }
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+
+                });
+            },
+
+            startActivityRule() {
+                const self = this;
+
+                this.userInfo.school = this.schoolSelected;
+
+                console.log(this.userInfo);
+
+                let checkResult = this.checkUserInfo();
+
+//                if (!checkResult) {
+//                    return false;
+//                }
+
+                $.ajax({
+                    type: 'PUT',
+                    url: '/apis/activity/answer/sign',
+//                    url: 'http://10.35.35.136:8000/activity/answer/sign',
+                    dataType: 'json',
+                    data: {
+                        name: this.userInfo.name,
+                        mobile: this.userInfo.mobile,
+                        school: this.userInfo.school,
+                    },
+                    success:function(data){
+                        let result = data.result;
+
+                        if (data.result && data.result.ok) {
+                            self.mobile_id = data.result.mobile_id;
+                        }
+
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+                });
+            },
+
+            startQuestion() {
+                // 获取问题
+                this.getQuestions();
+            },
+
+            // 获取问题
+            getQuestions() {
+                const self = this;
+
+                // 通过ajax获取后台数据
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/apis/activity/answer/questions',
+//                    url: 'http://10.35.35.136:8000/activity/answer/questions',
+                    dataType: 'json',
+                    data: {
+                        mobile: self.userInfo.mobile
+                    },
+                    success: function (data) {
+                        console.log(data.result)
+                        if (data.result && data.result.ok) {
+                            let questionList = data.result.list;
+
+                            if (questionList.length == 0) {
+                                // 提示用户已经答完3套题了
+                                console.log('没数据啊')
+                                return;
+                            }
+
+                            // 是否提现
+                            self.withdrawals = data.result.withdrawals;
+
+                            // 是否答题三次
+                            self.answerNumber = data.result.answerNumber;
+                            
+                            questionList.forEach(function (question) {
+                                self.questions.push({
+                                    id: question.id,
+                                    title: question.title,
+                                    content: [
+                                        {
+                                            value: 'A',
+                                            title: question.content[0].A
+                                        },
+                                        {
+                                            value: 'B',
+                                            title: question.content[1].B
+                                        },
+                                        {
+                                            value: 'C',
+                                            title: question.content[2].C
+                                        },
+                                        {
+                                            value: 'D',
+                                            title: question.content[3].D
+                                        }
+                                    ]
+                                });
+                            });
+
+                            self.initQuestion();
+                        }
+
+                    },
+                    error: function (err) {
+                        console.log(err)
+                    }
+                });
+            },
+
+            initQuestion() {
+                const self = this;
+
+                let question = this.questions[this.index++];
+                this.question = question;
+                this.next = this.index !== this.questions.length;
+
+                // 开始计时
+                let Interval = setInterval(function () {
+                    self.times++;
+                    self.updateTime();
+                }, 1000);
+
+
+                self.Interval = Interval;
+            },
+
+            nextQuestion() {
+                // 有题的情况下，必须选择一个
+                if (this.question && !this.pickedAnswer) {
+                    return false
+                }
+
+                // 获取下题前，处理已经答过的当前题
+                this.preSaveAnswer();
+
+                // 获取下次题
+                let question = this.questions[this.index++];
+                this.question = question;
+                this.next = this.index !== this.questions.length;
+            },
+
+            // 提交答案
+            submitAnswers() {
+                const self = this;
+
+                // 有题的情况下，必须选择一个
+                if (this.question && !this.pickedAnswer) {
+                    return false
+                }
+
+                this.preSaveAnswer();
+
+                console.log('已提交答案');
+                // 提交答案至后台
+                // 跳转url
+
+                console.log(this.userInfo);
+                console.log(this.answers);
+                console.log(this.times);
+
+                let answers = '';
+
+                this.answers.forEach(function (item, index) {
+                    if (index == self.answers.length - 1) {
+                        answers += item;
+                    } else {
+                        answers += item + ',';
+                    }
+                });
+
+                clearInterval(this.Interval);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/apis/activity/answer/questions/check',
+//                    url: 'http://10.35.35.136:8000/activity/answer/questions/check',
+                    dataType: "json",
+                    contentType: "application/x-www-form-urlencoded",
+                    traditional: true,
+                    data: {
+                        answers: answers,
+                        mobile: this.userInfo.mobile,
+                        answer_time: this.times,
+                    },
+                    success:function(data){
+                        let result = data.result;
+
+                        console.log(result)
+
+                        if (data.result && data.result.ok) {
+                            self.withdrawals = data.result.withdrawals;
+                            self.scratchNumber = data.result.scratchNumber;
+                        }
+
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+                });
+            },
+
+            // 预处理answer
+            preSaveAnswer() {
+                console.log(this.pickedAnswer);
+
+                if (this.question && this.pickedAnswer) {
+                    let questionId = this.question.id;
+                    let answer = this.pickedAnswer;
+                    let preAnswer = questionId + '_' + answer;
+
+                    console.log(preAnswer);
+                    this.answers.push(preAnswer);
+
+                    // 清除选中
+                    this.pickedAnswer = null;
+                }
+            },
+
+
+            // 计时
+            updateTime() {
+                if (this.times < 0) {
+                    // 停止计时
+                    clearInterval(this.Interval);
+                } else if (this.times > 60) {
+                    let m =  Math.floor(this.times / 60);
+                    let s = this.formate(this.times % 60);
+
+                    this.time = `${m}:${s}`;
+                } else {
+                    this.time = this.times + '';
+                }
+            },
+
+            // 格式户时间
+            formate (time) {
+                if (time >= 10) {
+                    return time
+                } else {
+                    return `0${time}`
+                }
+            },
+
+            // 数据验证
+            checkUserInfo() {
+                // 验证手机号
+                this.mobile = !this.userInfo.mobile;
+
+                this.school = !this.userInfo.school;
+                this.name = !this.userInfo.name;
+
+                return this.name && this.mobile && this.school;
+            },
+        },
+    })
+</script>
+</body>
+</html>
