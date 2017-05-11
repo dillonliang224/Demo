@@ -251,9 +251,6 @@
             pickedAnswer: null,
             next: true,
 
-            //是否提现
-            withdrawals: null,
-
             //当前答题次数
             answerNumber: null,
 
@@ -312,9 +309,9 @@
 
                 let checkResult = this.checkUserInfo();
 
-//                if (!checkResult) {
-//                    return false;
-//                }
+               if (!checkResult) {
+                   return false;
+               }
 
                 $.ajax({
                     type: 'PUT',
@@ -331,6 +328,8 @@
 
                         if (data.result && data.result.ok) {
                             self.mobile_id = data.result.mobile_id;
+
+                            // self.tooglePages(self.header, self.rule);
                         }
 
                     },
@@ -371,11 +370,18 @@
                             }
 
                             // 是否提现
-                            self.withdrawals = data.result.withdrawals;
+                            if (data.result.withdrawals) {
+                                console.log('你已体现过了');
+                                return;
+                            }
 
                             // 是否答题三次
                             self.answerNumber = data.result.answerNumber;
-                            
+                            if (self.answerNumber === 3) {
+                                console.log('你已答题三次');
+                                return;
+                            }
+
                             questionList.forEach(function (question) {
                                 self.questions.push({
                                     id: question.id,
@@ -412,20 +418,9 @@
             },
 
             initQuestion() {
-                const self = this;
-
-                let question = this.questions[this.index++];
-                this.question = question;
-                this.next = this.index !== this.questions.length;
-
-                // 开始计时
-                let Interval = setInterval(function () {
-                    self.times++;
-                    self.updateTime();
-                }, 1000);
-
-
-                self.Interval = Interval;
+                // this.tooglePages(this.rule, this.content);
+                this.getNextQuestoin();
+                this.startTime();
             },
 
             nextQuestion() {
@@ -438,6 +433,10 @@
                 this.preSaveAnswer();
 
                 // 获取下次题
+                this.getNextQuestoin();
+            },
+
+            getNextQuestoin() {
                 let question = this.questions[this.index++];
                 this.question = question;
                 this.next = this.index !== this.questions.length;
@@ -455,8 +454,6 @@
                 this.preSaveAnswer();
 
                 console.log('已提交答案');
-                // 提交答案至后台
-                // 跳转url
 
                 console.log(this.userInfo);
                 console.log(this.answers);
@@ -520,6 +517,13 @@
                 }
             },
 
+            // 开始计时
+            startTime() {
+                this.Interval = setInterval(function () {
+                    this.times++;
+                    this.updateTime();
+                }, 1000);
+            },
 
             // 计时
             updateTime() {
@@ -547,14 +551,24 @@
 
             // 数据验证
             checkUserInfo() {
-                // 验证手机号
-                this.mobile = !this.userInfo.mobile;
-
                 this.school = !this.userInfo.school;
                 this.name = !this.userInfo.name;
 
-                return this.name && this.mobile && this.school;
+                // 验证手机号
+                if (!(/^1\d{10}$/.test(this.userInfo.mobile))) {
+                    this.mobile = true
+                }
+
+                let valid = this.name || this.mobile || this.school;
+
+                return valid;
             },
+
+            // 切换页面
+            tooglePages(before, after) {
+                before = false;
+                after = true;
+            }
         },
     })
 </script>
