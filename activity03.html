@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>答题活动</title>
+    <link rel="stylesheet" href="../css/activity0510.css">
+    <script type="text/javascript" src="../js/rem.js"></script>
+    <script type="text/javascript" src='../js/jquery.min.js'></script>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+</head>
+<body>
+<div class="wrap">
+    <div class="header" v-if="user">
+        <p class="title">请输入个人信息</p>
+        <div class="header_cont">
+            <p class="enter">
+                <span>学校：</span>
+                <select v-model="schoolSelected">
+                    <option v-for="school in schools">{{school}}</option>
+                </select>
+            </p>
+            <p class="point school" v-show="school">请填写学校！</p>
+            <p class="enter"><span>姓名：</span><input type="text" v-model="userInfo.name"></p>
+            <p class="point name" v-show="name">请填写姓名！</p>
+            <p class="enter"><span>手机号：</span><input type="number" v-model="userInfo.mobile"></p>
+            <p class="point mobile" v-show="mobile">请填写手机号！</p>
+        </div>
+        <div class="button" v-on:click="startActivityRule"></div>
+    </div>
+    <div class="rule" v-if="rule">
+        <ul class="rule_cont">
+            <li>网金院杯——约战！财商比拼在江湖规则</li>
+            <li>1.活动时间：2017年5月16日-2017年5月31日。</li>
+            <li>2.参赛前请先选择你想加入的学校阵营，未列出的请选其他。</li>
+            <li>3.答题即可参与流量刮奖，100%中奖。共10题，答对题数越多，获得的刮奖次数越多。分享活动流量还可以翻倍。最多赢取1G流量。流量到账时间受运营商影响，如48小时未到账的，请在网金院APP里置顶帖“流量问题反馈”留言，我们的客服MM会及时为你解决。</li>
+            <li>4.领取流量的手机号需为报名参加活动的手机号，同一个网金院账号或同一个手机号均只能领取一次流量。</li>
+            <li>5.答题共有3次机会，完成答题或中途退出均算作一次答题，答题成绩和奖励流量均以最高的一次为准。</li>
+            <li>6.本活动一个手机号只能做一次流量提现，已提现过的用户可以在有答题机会的情况下继续答题更新成绩，但无法再次提现流量。线上活动结束后（截止日2017年5月31日），未提现的流量将作废。</li>
+            <li>7.按答对题数进行排名，答对较多者排名靠前；相同答对题数的，耗时较短的排名靠前。龙虎榜排名前16位进入线下总决赛，若选手主动放弃或无法联系，均视为弃权，网金院将会依据排名顺延联系其他参赛选手。总决赛时间地点将在活动结束后在APP里活动相关帖进行告知，请留意，总决赛奖金共1万元整。</li>
+            <br>
+            <li>本次活动最终解释权归网金院所有</li>
+        </ul>
+        <div class="rule_button" v-on:click="startQuestion">开始答题</div>
+    </div>
+    <div class="content" v-if="content">
+        <div class="head">
+            <div class="head_left"><span class="index" v-text="index"></span>/10</div>
+            <div class="head_right">用时：<span class="timestamp">{{time}}</span></div>
+        </div>
+        <div class="content_subject">
+            <p class="subject">{{question.title}}</p>
+            <label v-for="answer in question.content">
+                <input name="Fruit" type="radio" v-model="pickedAnswer" :value="answer.value"/>
+                <span>{{answer.title}}</span>
+            </label>
+        </div>
+        <div class="subject_point">
+            <span v-show="subject_point">请选择答案！</span>
+        </div>
+        <div class="rule_button" v-show="next" v-on:click="nextQuestion">下一题</div>
+        <div class="rule_button" v-show="!next" v-on:click="submitAnswers">提交</div>
+    </div>
+    <div class="lottery">
+        <div class="event_head">
+            <p class="head0"></p>
+            <p class="head1">学神</p>
+            <p class="head2">哇，崇拜你！现在就去<br>网金院答疑解惑，接受膜拜吧！</p>
+        </div>
+        <div class='event_content'>
+            <p class="content1">共答对<span>10</span>题，用时<span>3分20秒</span></p>
+            <p class="content2">当时段排名：<span>25</span></p>
+            <p class="content6">抽奖品</p>
+            <p class="content1">您获得<span>3</span>次抽奖机会</p>
+        </div>
+        <div class="event_footer"></div>
+    </div>
+    <div class="event">
+        <div class="event_head">
+            <p class="head0"></p>
+            <p class="head1">学神风采，炫耀一下！</p>
+            <p class="head2">学神的风采不止被膜拜，免费流量都是小case!</p>
+        </div>
+        <div class='event_content'>
+            <p class="content1">共答对<span>10</span>题，用时<span>3分20秒</span></p>
+            <p class="content1">最好成绩<span>9</span>题，用时<span>3分20秒</span></p>
+            <p class="content2">当时段排名：<span>25</span></p>
+            <p class="content3">查看答题排名</p>
+            <p class="content4">立即提现<span>50M</span></p>
+            <p class="content5">点击分享，流量立即翻多倍</p>
+            <p class="content4">再答一次 <span>（还有<i>2</i>次机会）</span></p>
+            <p class="content6">立即提现</p>
+            <p class="content2">到网金院继续学习</p>
+            <p class="content6">网金院</p>
+        </div>
+        <div class="event_footer"></div>
+    </div>
+
+
+
+</div>
+<script>
+    let app = new Vue({
+        el: '.wrap',
+        data: {
+            // 学生注册
+            userInfo: {
+                name: '',
+                school: '',
+                mobile: ''
+            },
+
+            schools: [],
+            schoolSelected: null, //选择的学校
+
+            user: true, //用户注册页
+            rule: true, //活动规则页
+            content: true, //问题页
+            event: false, //抽奖页
+            limitTips: false, //提示页
+
+            school: false,
+            name: false,
+            mobile: false,
+            subject_point: false, // 请选择答案
+
+            // 回答问题
+            questions: [], //获取的数据
+            answers: [], // 返回的数据
+            index: 0,
+            question: { //正在显示的数据
+                id: null,
+                title: null,
+                content: []
+            },
+            pickedAnswer: null, //选择的答案
+            next: true, //是否有下一页
+
+            //当前答题次数
+            answerNumber: 0,
+
+            //是否提现
+            withdrawals: null,
+
+            // 计时
+            times: 0,
+            time: '0',
+            stop: false,
+            Interval: null, //定时器
+
+            //正确数
+            correctNumber: null,
+            //用时
+            answerTime: null,
+            //刮奖次数
+            scratchNumber: null,
+
+
+            // 反馈
+            feedback: {
+                showImmediateWithdrawals: false,
+                showAnswerAgain: false,
+                showStudyInWJY: false,
+            }
+        },
+
+        created() {
+            this.getSchools();
+        },
+
+        computed: {
+            //反馈页图片上方文字
+            eventHead1: function () {
+                let text = '';
+
+                if (this.correctNumber <= 5) {
+                    text = '学渣史诗，渣得自信！';
+                } else if (this.correctNumber >= 9) {
+                    text = '学神风采，炫耀一下！';
+                } else {
+                    text = '傲娇学霸，不服来战！';
+                }
+
+                return text;
+            },
+            
+            //反馈页图片下方文字
+            eventHead2: function () {
+                let text = '';
+
+                if (this.correctNumber <= 5) {
+                    text = '读了假书不要紧，有本事你也来中个流量？！';
+                } else if (this.correctNumber >= 9) {
+                    text = '学神的风采不止被膜拜，免费流量都是小case！';
+                } else {
+                    text = '几十年修得一学霸，如今还有流量拿！';
+                }
+
+                return text;
+            }
+        },
+
+        methods: {
+            // 获取学校
+            getSchools() {
+                const self = this;
+
+                console.log('获取学校列表');
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/apis/activity/answer/schools',
+//                    url: 'http://10.35.35.136:8000/activity/answer/schools',
+                    dataType: 'json',
+                    success:function(data){
+                        if (data.result && data.result.ok) {
+                            let schools = data.result.list;
+                            self.schools = schools;
+                        }
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+
+                });
+            },
+
+            // 检查并登录
+            checkUserInfo() {
+                const self = this;
+
+                this.userInfo.school = this.schoolSelected;
+
+                console.log(this.validUserInfo())
+                console.log(this.userInfo)
+
+                if (!this.validUserInfo()) {
+                    return false;
+                }
+
+                $.ajax({
+                    type: 'PUT',
+                    url: '/apis/activity/answer/sign',
+//                    url: 'http://10.35.35.136:8000/activity/answer/sign',
+                    dataType: 'json',
+                    data: {
+                        name: this.userInfo.name,
+                        mobile: this.userInfo.mobile,
+                        school: this.userInfo.school,
+                    },
+                    success:function(data){
+                        if (data.result && data.result.ok) {
+                            self.answerNumber = data.result.answerNumber;
+
+                            if (self.answerNumber === 3) {
+                                self.user = false;
+                                self.limitTips = true;
+                            } else {
+                                self.user = false;
+                                self.rule = true;
+                            }
+                        }
+
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+                });
+            },
+
+            // 开始回答
+            startQuestion() {
+                // 获取问题
+                this.rule = false;
+                this.content = true;
+                this.getQuestions();
+            },
+
+            // 获取问题列表
+            getQuestions() {
+                const self = this;
+
+                // 通过ajax获取后台数据
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/apis/activity/answer/questions',
+//                    url: 'http://10.35.35.136:8000/activity/answer/questions',
+                    dataType: 'json',
+                    data: {
+                        mobile: self.userInfo.mobile
+                    },
+                    success: function (data) {
+                        console.log(data.result)
+                        if (data.result && data.result.ok) {
+                            let questionList = data.result.list;
+
+                            if (questionList.length == 0) {
+                                // 提示用户已经答完3套题了
+                                console.log('没数据啊')
+                                return;
+                            }
+
+                            // 是否提现
+                            if (data.result.withdrawals) {
+                                console.log('你已体现过了');
+                                self.withdrawals = data.result.withdrawals;
+                                // 跳转提示页
+                                return;
+                            }
+
+                            // 是否答题三次
+                            self.answerNumber = data.result.answerNumber;
+                            if (self.answerNumber === 3) {
+                                console.log('你已答题三次');
+                                return;
+                            }
+
+                            questionList.forEach(function (question) {
+                                self.questions.push({
+                                    id: question.id,
+                                    title: question.title,
+                                    content: [
+                                        {
+                                            value: 'A',
+                                            title: question.content[0].A
+                                        },
+                                        {
+                                            value: 'B',
+                                            title: question.content[1].B
+                                        },
+                                        {
+                                            value: 'C',
+                                            title: question.content[2].C
+                                        },
+                                        {
+                                            value: 'D',
+                                            title: question.content[3].D
+                                        }
+                                    ]
+                                });
+                            });
+
+                            self.initQuestion();
+                        }
+
+                    },
+                    error: function (err) {
+                        console.log(err)
+                    }
+                });
+            },
+
+            // 初始化
+            initQuestion() {
+                // this.tooglePages(this.rule, this.content);
+
+                this.getNextQuestoin();
+                this.startTime();
+            },
+
+            // 点击下一题
+            nextQuestion() {
+                // 有题的情况下，必须选择一个
+                if (this.question && !this.pickedAnswer) {
+                    this.subject_point = true;
+                    return false
+                } else {
+                    this.subject_point = false;
+                }
+
+                // 获取下题前，处理已经答过的当前题
+                this.preSaveAnswer();
+
+                // 获取下次题
+                this.getNextQuestion();
+            },
+
+            getNextQuestion() {
+                let question = this.questions[this.index++];
+                this.question = question;
+                this.next = this.index !== this.questions.length;
+            },
+
+            // 提交答案
+            submitAnswers() {
+                const self = this;
+
+                // 有题的情况下，必须选择一个
+                if (this.question && !this.pickedAnswer) {
+                    return false
+                }
+
+                this.preSaveAnswer();
+
+                console.log(this.answers);
+
+                let answers = '';
+
+                this.answers.forEach(function (item, index) {
+                    if (index == self.answers.length - 1) {
+                        answers += item;
+                    } else {
+                        answers += item + ',';
+                    }
+                });
+
+                clearInterval(this.Interval);
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/apis/activity/answer/questions/check',
+//                    url: 'http://10.35.35.136:8000/activity/answer/questions/check',
+                    dataType: "json",
+                    contentType: "application/x-www-form-urlencoded",
+                    traditional: true,
+                    data: {
+                        answers: answers,
+                        mobile: this.userInfo.mobile,
+                        answer_time: this.times,
+                    },
+                    success:function(data){
+                        let result = data.result;
+
+                        console.log(result)
+
+                        if (data.result && data.result.ok) {
+                            self.correctNumber = data.result.correctNumber;
+                            self.scratchNumber = data.result.scratchNumber;
+                            self.answerTime = data.result.answerTime;
+
+                            if (self.withdrawals) {
+                                self.limitTips = true;
+                                self.event = false;
+                            } else {
+                                self.limitTips = false;
+                                self.content = false;
+                                self.event = true;
+                                self.getAnswerDescribe(self.correctNumber);
+                            }
+                        }
+
+                    },
+                    error:function(data){
+                        console.log(data)
+                    }
+                });
+            },
+
+            // 预处理answer
+            preSaveAnswer() {
+                console.log(this.pickedAnswer);
+
+                if (this.question && this.pickedAnswer) {
+                    let questionId = this.question.id;
+                    let answer = this.pickedAnswer;
+                    let preAnswer = questionId + '_' + answer;
+
+                    console.log(preAnswer);
+                    this.answers.push(preAnswer);
+
+                    // 清除选中
+                    this.pickedAnswer = null;
+                }
+            },
+
+            // 开始计时
+            startTime() {
+                const self = this;
+
+                this.Interval = setInterval(function () {
+                    self.times++;
+                    self.updateTime();
+                }, 1000);
+            },
+
+            // 计时
+            updateTime() {
+                if (this.times < 0) {
+                    // 停止计时
+                    clearInterval(this.Interval);
+                } else if (this.times > 60) {
+                    let m =  Math.floor(this.times / 60);
+                    let s = this.format(this.times % 60);
+
+                    this.time = `${m}:${s}`;
+                } else {
+                    this.time = this.times + '';
+                }
+            },
+
+            // 格式户时间
+            format (time) {
+                if (time >= 10) {
+                    return time
+                } else {
+                    return `0${time}`
+                }
+            },
+
+            // 数据验证
+            validUserInfo() {
+                this.school = !this.userInfo.school;
+
+                // 验证中英文
+                if (!(/^([\u4E00-\uFA29]|[\uE7C7-\uE7F3]|[a-zA-Z]){1,20}$/.test(this.userInfo.name))) {
+                    this.name = true;
+                } else {
+                    this.name = false;
+                }
+
+                // 验证手机号
+                if (!(/^1\d{10}$/.test(this.userInfo.mobile))) {
+                    this.mobile = true
+                } else {
+                    this.mobile = false;
+                }
+
+                let valid = this.name || this.mobile || this.school;
+
+                return !valid;
+            },
+
+            // 答对题数描述
+            getAnswerDescribe(num) {
+                const self = this;
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/apis/activity/answer/describe',
+                    dataType: "json",
+                    data: {
+                        number: num,
+                    },
+                    success: function (data) {
+                        let result = data.result;
+
+                        console.log(result)
+
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            },
+
+            // 根据提现和答题情况展示反馈页面内容
+            showFeedbackContent() {
+                let withdrawals =  this.withdrawals; //提现状态 1=未提现,0=已提现
+                let answerNumber = -this.answerNumber + 3; //当前答题次数( 3 = 第1次，2= 第2次)
+
+                if (withdrawals && answerNumber < 3) {
+                    //若用户未提现过、且答题次数不满3次，则反馈页面包含“立即提现”及“再答一次”两个按钮
+                    this.feedback.showImmediateWithdrawals = true;
+                    this.feedback.showAnswerAgain = true;
+                    this.feedback.showStudyInWJY = false;
+                } else if (withdrawals && answerNumber == 3) {
+                    //若用户未提现过、且答题次数已经达到3次，则反馈页面仅显示“立即提现”按钮
+                    this.feedback.showImmediateWithdrawals = true;
+                    this.feedback.showAnswerAgain = false;
+                    this.feedback.showStudyInWJY = false;
+                } else if (!withdrawals && answerNumber < 3) {
+                    //若用户已经提现、且答题次数不满3次，则反馈页面仅显示“再答一次”按钮
+                    this.feedback.showImmediateWithdrawals = false;
+                    this.feedback.showAnswerAgain = true;
+                    this.feedback.showStudyInWJY = false;
+                } else if (!withdrawals && answerNumber == 3) {
+                    //若用户已经提现、且答题次数达到3次，则反馈页面不显示“立即提现”和“再答一次”按钮，仅显示“网金院”按钮
+                    this.feedback.showImmediateWithdrawals = false;
+                    this.feedback.showAnswerAgain = false;
+                    this.feedback.showStudyInWJY = true;
+                }
+            },
+
+            // 查看答题排名
+            viewAnswerRanking() {
+                const self = this;
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/apis/activity/answer/ranking',
+                    dataType: 'json',
+                    success: function (data) {
+                        console.log(data)
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            },
+
+            // 立即提现
+            immediateWithdrawals() {
+                // todo
+            },
+
+            // 再答一次
+            answerAgain() {
+
+            },
+
+            // 去网金院学习
+            studyInWJY() {
+                // todo
+            },
+        },
+    })
+</script>
+</body>
+</html>
